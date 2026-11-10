@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SalaryTimer</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div id="app">
+
+  <!-- 主面板 -->
+  <section id="viewMain" class="view">
+    <header class="topbar" data-drag="1">
+      <div class="brand">
+        <span class="logo">🐮🐎</span>
+        <span class="brand-name">SalaryTimer</span>
+      </div>
+      <div class="topright">
+        <div class="clock">
+          <div class="clock-date" id="nowDate">2026.11.10 周二</div>
+          <div class="clock-time" id="nowTime">11:46:06</div>
+        </div>
+        <button class="icon-btn" id="btnSettings" title="设置">设置</button>
+        <button class="icon-btn quit" id="btnQuitTop" title="退出看板">×</button>
+      </div>
+    </header>
+
+    <div class="status-row">
+      <div class="status-left">
+        <div class="status-line">
+          <span class="dot" id="statusDot"></span>
+          <span class="status-text" id="statusText">上班中</span>
+        </div>
+        <div class="status-sub" id="statusSub">工作日 · 09:00–18:00</div>
+      </div>
+      <div class="status-right">
+        <div class="status-cap" id="countdownCap">距离下班</div>
+        <div class="countdown" id="countdown">06:13:53</div>
+      </div>
+    </div>
+
+    <div class="card green">
+      <div class="green-head">
+        <span class="green-label">今日已赚</span>
+        <span class="coin">¥</span>
+      </div>
+      <div class="green-main">
+        <div class="amount">
+          <span class="amount-cur">¥</span><span class="amount-int" id="todayInt">256</span><span class="amount-dec" id="todayDec">.35</span>
+        </div>
+      </div>
+      <div class="green-foot">
+        <div class="speed">当前速度 <b id="speed">¥0.0257</b> / 秒</div>
+        <div class="progress-row">
+          <span id="progressText">工时进度 2.77 / 9.00 小时</span>
+          <span id="progressPct">30.8%</span>
+        </div>
+        <div class="bar"><i id="barFill" style="width:30.8%"></i></div>
+      </div>
+    </div>
+
+    <div class="card plain month">
+      <div class="col">
+        <div class="label">本期累计</div>
+        <div class="label-sub" id="cycleRange">10.25 – 11.24</div>
+      </div>
+      <div class="month-amount" id="monthTotal">¥5256.33</div>
+    </div>
+
+    <div class="card plain split">
+      <div class="split-col">
+        <div class="label">时薪</div>
+        <div class="split-value" id="hourly">¥92.59</div>
+      </div>
+      <div class="split-div"></div>
+      <div class="split-col">
+        <div class="label">今日满勤</div>
+        <div class="split-value" id="fullDay">¥833.33</div>
+      </div>
+    </div>
+
+    <details class="fx" id="fxBox">
+      <summary>价格换算</summary>
+      <div class="fx-body">
+        <input id="fxPrice" type="number" min="0" step="1" placeholder="输入价格，例如 89" />
+        <div class="fx-out" id="fxOut">填个价格，看看要干多久</div>
+      </div>
+    </details>
+
+    <footer class="foot" data-drag="1">
+      <span>按排班日历估算，非打卡工时 · 仅存本机</span>
+      <button class="link" id="btnExportQuick">导出</button>
+    </footer>
+  </section>
+
+  <!-- 设置面板 -->
+  <section id="viewSettings" class="view hidden">
+    <header class="topbar" data-drag="1">
+      <button class="back" id="btnBack">‹ 返回</button>
+      <div class="panel-title">设置</div>
+    </header>
+
+    <div class="scroll">
+      <div class="card plain">
+        <h3>薪资设置</h3>
+
+        <label for="dailySalary">日薪（元）</label>
+        <input id="dailySalary" type="number" step="0.01" min="0" placeholder="833.33" />
+
+        <label for="salaryFrom">日薪变更从哪天生效</label>
+        <input id="salaryFrom" type="date" />
+
+        <div class="row2">
+          <div>
+            <label for="workStart">上班时间</label>
+            <input id="workStart" type="time" step="60" />
+          </div>
+          <div>
+            <label for="workEnd">下班时间</label>
+            <input id="workEnd" type="time" step="60" />
+          </div>
+        </div>
+
+        <label for="openingAmount">期初金额（元，上期已发到手的那部分）</label>
+        <input id="openingAmount" type="number" step="0.01" min="0" placeholder="0.00" />
+
+        <label for="openingDate">上期期末日期（期初金额已包含到这一天）</label>
+        <input id="openingDate" type="date" />
+
+        <label for="cycleEnd">本次计薪周期期末</label>
+        <input id="cycleEnd" type="date" />
+        <p class="hint">例如 10.25–11.24 这一期：上期期末填 10.24，本期期末填 11.24。到期后自动滚到下一期，期初金额只在首期计入。</p>
+
+        <button class="primary" id="btnSaveSalary">保存设置</button>
+        <p class="hint" id="salaryHint">日薪从上面的日期起一直生效，更早的排班日按原日薪保留。</p>
+
+        <label for="startDate">开始记录日期（这之前不计入任何一期）</label>
+        <input id="startDate" type="date" />
+
+        <div class="hist-block">
+          <div class="hist-title">日薪生效记录（最近 5 条）</div>
+          <div id="salaryHistoryList"></div>
+        </div>
+      </div>
+
+      <div class="card plain">
+        <h3>工作日设置</h3>
+        <p class="hint">点击日期切换是否排班，绿点为排班工作日；默认周一至周五，未来月份按同一规则自动生效。</p>
+
+        <div class="cal-head">
+          <button class="cal-nav" id="calPrev">‹</button>
+          <span class="cal-label" id="calLabel">2026年 11月</span>
+          <button class="cal-nav" id="calNext">›</button>
+        </div>
+        <div class="cal-week">
+          <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+
+        <button class="ghost wide" id="btnResetMonth">本月恢复默认（周一至周五）</button>
+      </div>
+
+      <div class="card plain actions">
+        <button class="ghost wide" id="btnExport">导出 CSV</button>
+        <button class="ghost wide danger" id="btnQuit">退出看板</button>
+        <p class="hint center">数据保存在 ~/Library/Application Support/SalaryTimer</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="toast" id="toast"></div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

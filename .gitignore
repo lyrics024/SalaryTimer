@@ -1,0 +1,10 @@
+# 编译产物：首次运行 ./start.sh 会自动重建
+.build/
+
+# 导出的收入 CSV（个人数据）
+exports/
+
+# macOS
+.DS_Store
+
+*.log
