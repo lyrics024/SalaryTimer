@@ -34,7 +34,7 @@
         </div>
         <div class="status-sub" id="statusSub">工作日 · 09:00–18:00</div>
       </div>
-      <div class="status-right">
+      <div class="status-right" id="countdownBox" title="点击切换：下班 / 发薪日">
         <div class="status-cap" id="countdownCap">距离下班</div>
         <div class="countdown" id="countdown">06:13:53</div>
       </div>
@@ -131,6 +131,9 @@
         <label for="cycleEnd">本次计薪周期期末</label>
         <input id="cycleEnd" type="date" />
         <p class="hint">例如 10.25–11.24 这一期：上期期末填 10.24，本期期末填 11.24。到期后自动滚到下一期，期初金额只在首期计入。</p>
+
+        <label for="payday">发薪日（留空 = 每月最后一个工作日）</label>
+        <input id="payday" type="date" />
 
         <button class="primary" id="btnSaveSalary">保存设置</button>
         <p class="hint" id="salaryHint">日薪从上面的日期起一直生效，更早的排班日按原日薪保留。</p>

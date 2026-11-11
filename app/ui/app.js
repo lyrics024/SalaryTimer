@@ -46,6 +46,8 @@ function defaultState() {
       openingAmount: 0,
       openingDate: prevMonthDay,
       cycleEnd: keyOf(addMonthsClamped(parseKey(prevMonthDay), 1)),
+      payday: null,
+      countdownMode: 'work',
       startDate: start,
     },
     salaryHistory: [{ from: start, amount: 833.33 }],
@@ -122,6 +124,34 @@ function setSalaryFrom(effKey, amount) {
   state.salaryHistory.push({ from: effKey, amount });
   state.salaryHistory.sort((a, b) => a.from.localeCompare(b.from));
   state.settings.dailySalary = amount;
+}
+
+function lastWorkdayOfMonth(year, month) {
+  let d = new Date(year, month + 1, 0);
+  while (d.getMonth() === month) {
+    if (isWorkday(keyOf(d))) return keyOf(d);
+    d = addDays(d, -1);
+  }
+  return keyOf(d);
+}
+
+// 手动值只要还没过期就用它，过期了自动回到“每月最后一个工作日”
+function nextPayday(now) {
+  const todayKey = keyOf(now);
+  if (state.settings.payday && state.settings.payday >= todayKey) return state.settings.payday;
+  let year = now.getFullYear();
+  let month = now.getMonth();
+  let key = lastWorkdayOfMonth(year, month);
+  if (key < todayKey) {
+    month += 1;
+    if (month > 11) { month = 0; year += 1; }
+    key = lastWorkdayOfMonth(year, month);
+  }
+  return key;
+}
+
+function paydayDays(now) {
+  return Math.round((parseKey(nextPayday(now)) - parseKey(keyOf(now))) / 86400000);
 }
 
 function dayMinutes() {
@@ -254,7 +284,12 @@ function render() {
   const cap = $('countdownCap');
   const cd = $('countdown');
   cd.classList.remove('flat');
-  if (st.status === 'working') { cap.textContent = '距离下班'; cd.textContent = dur(st.remainMs); }
+  if (state.settings.countdownMode === 'payday') {
+    const days = paydayDays(now);
+    cap.textContent = '距离发薪日';
+    cd.textContent = days <= 0 ? '今天' : `${days} 天`;
+    cd.classList.add('flat');
+  } else if (st.status === 'working') { cap.textContent = '距离下班'; cd.textContent = dur(st.remainMs); }
   else if (st.status === 'before') { cap.textContent = '距离上班'; cd.textContent = dur(st.toStartMs); }
   else if (st.status === 'done') { cap.textContent = '距离下班'; cd.textContent = '已下班'; cd.classList.add('flat'); }
   else if (st.status === 'rest') { cap.textContent = '距离下班'; cd.textContent = '休息日'; cd.classList.add('flat'); }
@@ -364,6 +399,7 @@ function fillSettings() {
   $('openingDate').value = s.openingDate || '';
   $('cycleEnd').value = s.cycleEnd || (s.openingDate ? defaultCycleEnd(s.openingDate) : '');
   $('startDate').value = s.startDate || '';
+  $('payday').value = s.payday || '';
   $('salaryHint').textContent = '日薪从上面的日期起一直生效，更早的排班日按原日薪保留。';
   fillSalaryHistory();
 }
@@ -413,6 +449,7 @@ function saveSalaryForm() {
   s.openingDate = openingDate;
   s.cycleEnd = cycleEnd;
   s.startDate = startDate;
+  s.payday = $('payday').value || null;
 
   let hint = '';
   if (Math.abs(daily - before) > 0.0049) {
@@ -543,6 +580,12 @@ document.querySelectorAll('[data-drag]').forEach((el) => {
     const stop = () => { post({ type: 'dragEnd' }); window.removeEventListener('mouseup', stop); };
     window.addEventListener('mouseup', stop);
   });
+});
+
+$('countdownBox').addEventListener('click', () => {
+  state.settings.countdownMode = state.settings.countdownMode === 'payday' ? 'work' : 'payday';
+  persist();
+  render();
 });
 
 $('fxPrice').addEventListener('input', () => {

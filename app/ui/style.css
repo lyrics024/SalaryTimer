@@ -122,7 +122,15 @@ html, body {
 .dot.done { background: #7f8c85; box-shadow: 0 0 0 3px rgba(127,140,133,.15); }
 .status-text { font-size: 12.5px; font-weight: 600; }
 .status-sub { font-size: 10.5px; color: var(--ink-mute); margin-top: 3px; padding-left: 13px; }
-.status-right { text-align: right; }
+.status-right {
+  text-align: right;
+  cursor: pointer;
+  border-radius: 8px;
+  margin: -4px -6px 0 0;
+  padding: 4px 6px 0;
+  transition: background .15s;
+}
+.status-right:hover { background: rgba(31,75,59,.06); }
 .status-cap { font-size: 10px; color: var(--ink-mute); }
 .countdown {
   font-size: 19px;
